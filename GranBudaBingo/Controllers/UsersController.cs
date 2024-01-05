@@ -1,13 +1,10 @@
 ﻿using GranBudaBingo.Dtos;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using static GranBudaBingo.Controllers.LobbyController;
 
 namespace GranBudaBingo.Controllers
 {
@@ -92,7 +89,6 @@ namespace GranBudaBingo.Controllers
 
             if (result.Succeeded)
             {
-                LobbyData.PlayersInLobby.Add(userCredentials.Email);
                 return CreateToken(userCredentials);
             }
             else
