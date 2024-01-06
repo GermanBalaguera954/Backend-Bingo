@@ -1,6 +1,8 @@
-﻿using GranBudaBingo.Models;
+﻿using GranBudaBingo.Hubs;
+using GranBudaBingo.Models;
 using GranBudaBingo.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 
 namespace GranBudaBingo.Controllers
@@ -11,11 +13,13 @@ namespace GranBudaBingo.Controllers
     {
         private readonly IBingoCardGenerator bingoCardGenerator;
         private readonly IBingoBallService bingoBallService;
+        private readonly IHubContext<BingoHub> bingoHub;
 
-        public GameController(IBingoCardGenerator bingoCardGenerator, IBingoBallService bingoBallService)
+        public GameController(IBingoCardGenerator bingoCardGenerator, IBingoBallService bingoBallService, IHubContext<BingoHub> bingoHub)
         {
             this.bingoCardGenerator = bingoCardGenerator;
             this.bingoBallService = bingoBallService;
+            this.bingoHub = bingoHub;
         }
 
         [HttpGet("generate")]
@@ -43,6 +47,13 @@ namespace GranBudaBingo.Controllers
         public ActionResult ResetBalls()
         {
             bingoBallService.ResetBalls();
+            return Ok();
+        }
+
+        [HttpPost("declarewinner")]
+        public async Task<ActionResult> DeclareWinner()
+        {
+            await bingoHub.Clients.All.SendAsync("GameWon");
             return Ok();
         }
     }

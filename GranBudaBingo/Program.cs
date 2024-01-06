@@ -1,4 +1,5 @@
 using GranBudaBingo;
+using GranBudaBingo.Hubs;
 using GranBudaBingo.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -37,7 +38,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin",
+    options.AddPolicy("CorsPolicy",
         builder => builder.WithOrigins("http://localhost:3000")
             .AllowAnyHeader()
             .AllowAnyMethod()
@@ -65,10 +66,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowSpecificOrigin");
+app.UseCors("CorsPolicy");
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<BingoHub>("/bingohub");
 
 app.Run();
