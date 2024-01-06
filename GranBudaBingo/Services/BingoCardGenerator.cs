@@ -19,7 +19,7 @@
 
                 while (numbers.Count < 5)
                 {
-                    if (i == 2 && numbers.Count == 2) // Deja el centro vacío
+                    if (i == 2 && numbers.Count == 2)
                     {
                         card[i][numbers.Count] = 0;
                         numbers.Add(0);

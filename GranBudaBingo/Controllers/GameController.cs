@@ -1,5 +1,7 @@
-﻿using GranBudaBingo.Services;
+﻿using GranBudaBingo.Models;
+using GranBudaBingo.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace GranBudaBingo.Controllers
 {
@@ -8,17 +10,40 @@ namespace GranBudaBingo.Controllers
     public class GameController : ControllerBase
     {
         private readonly IBingoCardGenerator bingoCardGenerator;
+        private readonly IBingoBallService bingoBallService;
 
-        public GameController(IBingoCardGenerator bingoCardGenerator)
+        public GameController(IBingoCardGenerator bingoCardGenerator, IBingoBallService bingoBallService)
         {
             this.bingoCardGenerator = bingoCardGenerator;
+            this.bingoBallService = bingoBallService;
         }
 
         [HttpGet("generate")]
-        public ActionResult<BingoCard> BingoCardGenerate()
+        public async Task<ActionResult<BingoCard>> BingoCardGenerateAsync()
         {
-            var bingoCard = new BingoCard(bingoCardGenerator);
+            var bingoCard = await Task.Run(() => new BingoCard(bingoCardGenerator)); // Asumiendo que esto podría ser una operación costosa
             return Ok(bingoCard);
+        }
+
+        [HttpGet("nextball")]
+        public async Task<ActionResult<BingoBall>> GetNextBingoBallAsync()
+        {
+            var ball = await bingoBallService.GetNextBallAsync(); // Asumiendo que GetNextBall ahora es GetNextBallAsync
+            if (ball != null)
+            {
+                return Ok(ball);
+            }
+            else
+            {
+                return NoContent();
+            }
+        }
+
+        [HttpPost("resetballs")]
+        public ActionResult ResetBalls()
+        {
+            bingoBallService.ResetBalls();
+            return Ok();
         }
     }
 }

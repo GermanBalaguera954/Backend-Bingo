@@ -12,6 +12,8 @@ var configuration = builder.Configuration;
 // Add services to the container.
 
 builder.Services.AddSingleton<IBingoCardGenerator, BingoCardGenerator>();
+builder.Services.AddSingleton<IBingoBallService, BingoBallService>();
+
 
 builder.Services.AddSignalR();
 
