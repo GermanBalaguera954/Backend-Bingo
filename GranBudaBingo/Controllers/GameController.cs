@@ -3,7 +3,6 @@ using GranBudaBingo.Models;
 using GranBudaBingo.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using System.Threading.Tasks;
 
 namespace GranBudaBingo.Controllers
 {
@@ -42,14 +41,7 @@ namespace GranBudaBingo.Controllers
                 return NoContent();
             }
         }
-
-        [HttpPost("resetballs")]
-        public ActionResult ResetBalls()
-        {
-            bingoBallService.ResetBalls();
-            return Ok();
-        }
-
+     
         [HttpPost("declarewinner")]
         public async Task<ActionResult> DeclareWinner()
         {

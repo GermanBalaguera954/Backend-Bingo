@@ -26,6 +26,35 @@ namespace GranBudaBingo.Controllers
             this.userManager = userManager;
         }
 
+        private async Task<Authentication> CreateToken(UserCredentials userCredentials)
+        {
+            var user = await userManager.FindByEmailAsync(userCredentials.Email);
+            if (user == null)
+            {
+                return null;
+            }
+
+            var claims = new List<Claim>()
+            {
+                new Claim("email", userCredentials.Email),
+                new Claim(ClaimTypes.Name, user.UserName)
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["keyJwt"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var expiration = DateTime.UtcNow.AddYears(1);
+
+            var securityToken = new JwtSecurityToken(issuer: null, audience: null, claims: claims,
+                expires: expiration, signingCredentials: creds);
+
+            return new Authentication()
+            {
+                Token = new JwtSecurityTokenHandler().WriteToken(securityToken),
+                Expiration = expiration
+            };
+        }
+
         [HttpPost("register")]
         public async Task<ActionResult<Authentication>> Register(UserCredentials userCredentials)
         {
@@ -34,11 +63,37 @@ namespace GranBudaBingo.Controllers
 
             if (result.Succeeded)
             {
-                return CreateToken(userCredentials);
+                var token = await CreateToken(userCredentials);
+                if (token != null)
+                {
+                    return Ok(token);
+                }
+                return BadRequest("No se pudo crear el token");
             }
             else
             {
                 return BadRequest(result.Errors);
+            }
+        }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<Authentication>> Login(UserCredentials userCredentials)
+        {
+            var result = await signInManager.PasswordSignInAsync(userCredentials.Email, userCredentials.Password,
+                isPersistent: false, lockoutOnFailure: false);
+
+            if (result.Succeeded)
+            {
+                var token = await CreateToken(userCredentials);
+                if (token != null)
+                {
+                    return Ok(token);
+                }
+                return BadRequest("No se pudo crear el token");
+            }
+            else
+            {
+                return BadRequest("Login Incorrecto");
             }
         }
 
@@ -57,44 +112,6 @@ namespace GranBudaBingo.Controllers
             };
 
             return Ok(userDto);
-        }
-
-        private Authentication CreateToken(UserCredentials userCredentials)
-        {
-            var claims = new List<Claim>()
-            {
-                new Claim("email", userCredentials.Email)
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["keyJwt"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var expiration = DateTime.UtcNow.AddYears(1);
-
-            var securityToken = new JwtSecurityToken(issuer: null, audience: null, claims: claims,
-                expires: expiration, signingCredentials: creds);
-
-            return new Authentication()
-            {
-                Token = new JwtSecurityTokenHandler().WriteToken(securityToken),
-                Expiration = expiration
-            };
-        }
-
-        [HttpPost("login")]
-        public async Task<ActionResult<Authentication>> Login(UserCredentials userCredentials)
-        {
-            var result = await signInManager.PasswordSignInAsync(userCredentials.Email, userCredentials.Password,
-                isPersistent: false, lockoutOnFailure: false);
-
-            if (result.Succeeded)
-            {
-                return CreateToken(userCredentials);
-            }
-            else
-            {
-                return BadRequest("Login Incorrecto");
-            }
         }
     }
 }

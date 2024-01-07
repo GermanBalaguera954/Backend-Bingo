@@ -5,7 +5,6 @@ namespace GranBudaBingo.Services
     public interface IBingoBallService
     {
         Task<BingoBall> GetNextBallAsync();
-        void ResetBalls();
     }
 
     public class BingoBallService : IBingoBallService
@@ -57,11 +56,6 @@ namespace GranBudaBingo.Services
             }
 
             return Task.FromResult(balls.Dequeue());
-        }
-
-        public void ResetBalls()
-        {
-            balls = new Queue<BingoBall>(GenerateAndShuffleBalls());
         }
     }
 }
