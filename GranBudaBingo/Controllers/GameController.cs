@@ -28,7 +28,7 @@ namespace GranBudaBingo.Controllers
         [HttpGet("generate")]
         public async Task<ActionResult<BingoCard>> BingoCardGenerateAsync()
         {
-            var bingoCard = await Task.Run(() => new BingoCard(bingoCardGenerator)); // Asumiendo que esto podría ser una operación costosa
+            var bingoCard = await Task.Run(() => new BingoCard(bingoCardGenerator));
             return Ok(bingoCard);
         }
 

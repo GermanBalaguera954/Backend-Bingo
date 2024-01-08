@@ -25,11 +25,9 @@ namespace GranBudaBingo.Services
 
         private void InitializeGame()
         {
-            // Limpia listas para un nuevo juego
             balls.Clear();
             drawnBalls.Clear();
 
-            // Inicializar balotas
             string[] columns = { "B", "I", "N", "G", "O" };
             for (int i = 0; i < columns.Length; i++)
             {
@@ -39,7 +37,6 @@ namespace GranBudaBingo.Services
                 }
             }
 
-            // Opcional: Mezclar las balotas
             balls = balls.OrderBy(x => random.Next()).ToList();
         }
 
@@ -53,7 +50,7 @@ namespace GranBudaBingo.Services
             int index = random.Next(balls.Count);
             BingoBall drawnBall = balls[index];
             balls.RemoveAt(index);
-            drawnBalls.Add(drawnBall); // Agregar a las balotas sorteadas
+            drawnBalls.Add(drawnBall);
             return drawnBall;
         }
 
@@ -62,7 +59,6 @@ namespace GranBudaBingo.Services
             return balls.Count == 0;
         }
 
-        // Método para iniciar un nuevo juego
         public void StartNewGame()
         {
             InitializeGame();

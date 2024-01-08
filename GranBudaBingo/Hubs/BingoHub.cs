@@ -1,5 +1,4 @@
-﻿using GranBudaBingo.Services;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 
 namespace GranBudaBingo.Hubs
 {

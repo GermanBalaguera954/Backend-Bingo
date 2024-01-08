@@ -7,11 +7,10 @@ namespace GranBudaBingo.Services
         bool IsBingo(Dictionary<string, int> markedCells, string gameType, List<int> drawnNumbers);
     }
 
-    public class BingoCheckService: IBingoCheckService
+    public class BingoCheckService : IBingoCheckService
     {
         public bool IsBingo(Dictionary<string, int> markedCells, string gameType, List<int> drawnNumbers)
         {
-            // Verificar si el número en cada celda marcada está entre los números sorteados
             if (!markedCells.All(cell => drawnNumbers.Contains(cell.Value)))
             {
                 return false;
@@ -20,7 +19,7 @@ namespace GranBudaBingo.Services
             switch (gameType)
             {
                 case "fullHouse":
-                    return markedCells.Count == 24; // Centro vacío no se cuenta
+                    return markedCells.Count == 24;
                 case "horizontalLine":
                     return CheckHorizontalLines(markedCells);
                 case "verticalLine":
@@ -38,10 +37,8 @@ namespace GranBudaBingo.Services
         {
             for (int i = 0; i < 5; i++)
             {
-                // Se crea una lista de claves que representan cada celda en la fila actual
                 var row = Enumerable.Range(0, 5).Select(col => $"{i}-{col}").ToList();
 
-                // Se verifica si todas las celdas de la fila actual están marcadas
                 if (row.All(id => markedCells.ContainsKey(id)))
                 {
                     return true;
