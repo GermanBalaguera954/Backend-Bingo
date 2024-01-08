@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using GranBudaBingo.Services;
+using Microsoft.AspNetCore.SignalR;
 
 namespace GranBudaBingo.Hubs
 {
     public class BingoHub : Hub
     {
-        public async Task NotifyGameWon()
+        public async Task SendBingo(string user)
         {
-            await Clients.Others.SendAsync("GameWon");
+            await Clients.Others.SendAsync("ReceiveMessage", $"{user} han realizado BINGO! Redirigiendo al inicio...");
         }
     }
 }

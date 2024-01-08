@@ -2,27 +2,27 @@
 {
     public interface IBingoCardGenerator
     {
-        int[][] GenerateBingoCardMatrix();
+        int?[][] GenerateBingoCardMatrix();
     }
 
     public class BingoCardGenerator : IBingoCardGenerator
     {
-        public int[][] GenerateBingoCardMatrix()
+        public int?[][] GenerateBingoCardMatrix()
         {
-            int[][] card = new int[5][];
+            int?[][] card = new int?[5][];
             Random rand = new Random();
 
             for (int i = 0; i < 5; i++)
             {
-                card[i] = new int[5];
+                card[i] = new int?[5];
                 HashSet<int> numbers = new HashSet<int>();
 
                 while (numbers.Count < 5)
                 {
                     if (i == 2 && numbers.Count == 2)
                     {
-                        card[i][numbers.Count] = 0;
-                        numbers.Add(0);
+                        card[i][numbers.Count] = null;
+                        numbers.Add(-1);
                         continue;
                     }
 

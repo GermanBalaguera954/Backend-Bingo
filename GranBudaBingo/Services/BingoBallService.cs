@@ -4,58 +4,68 @@ namespace GranBudaBingo.Services
 {
     public interface IBingoBallService
     {
-        Task<BingoBall> GetNextBallAsync();
+        BingoBall DrawBall();
+        bool IsGameFinished();
+        void StartNewGame();
     }
 
     public class BingoBallService : IBingoBallService
     {
-        private Queue<BingoBall> balls;
+        private List<BingoBall> balls;
+        private Random random;
+        private List<BingoBall> drawnBalls;
 
         public BingoBallService()
         {
-            balls = new Queue<BingoBall>(GenerateAndShuffleBalls());
+            random = new Random();
+            balls = new List<BingoBall>();
+            drawnBalls = new List<BingoBall>();
+            InitializeGame();
         }
 
-        private List<BingoBall> GenerateAndShuffleBalls()
+        private void InitializeGame()
         {
-            var balls = new List<BingoBall>();
+            // Limpia listas para un nuevo juego
+            balls.Clear();
+            drawnBalls.Clear();
 
-            // Generar balotas
-            for (int i = 1; i <= 75; i++)
+            // Inicializar balotas
+            string[] columns = { "B", "I", "N", "G", "O" };
+            for (int i = 0; i < columns.Length; i++)
             {
-                string column = i switch
+                for (int j = 1; j <= 15; j++)
                 {
-                    <= 15 => "B",
-                    <= 30 => "I",
-                    <= 45 => "N",
-                    <= 60 => "G",
-                    _=> "O"
-                };
-
-                balls.Add(new BingoBall(i, column));
+                    balls.Add(new BingoBall(j + 15 * i, columns[i]));
+                }
             }
 
-            // Barajar las balotas usando el algoritmo de Fisher-Yates
-            Random rand = new Random();
-            for (int i = balls.Count - 1; i > 0; i--)
-            {
-                int j = rand.Next(i + 1);
-                var temp = balls[i];
-                balls[i] = balls[j];
-                balls[j] = temp;
-            }
-
-            return balls;
+            // Opcional: Mezclar las balotas
+            balls = balls.OrderBy(x => random.Next()).ToList();
         }
-        public Task<BingoBall> GetNextBallAsync()
+
+        public BingoBall DrawBall()
         {
-            if (balls.Count == 0)
+            if (IsGameFinished())
             {
-                // No hay más balotas, el juego ha terminado
-                return Task.FromResult<BingoBall>(null);
+                throw new InvalidOperationException("No hay más balotas para sortear.");
             }
 
-            return Task.FromResult(balls.Dequeue());
+            int index = random.Next(balls.Count);
+            BingoBall drawnBall = balls[index];
+            balls.RemoveAt(index);
+            drawnBalls.Add(drawnBall); // Agregar a las balotas sorteadas
+            return drawnBall;
+        }
+
+        public bool IsGameFinished()
+        {
+            return balls.Count == 0;
+        }
+
+        // Método para iniciar un nuevo juego
+        public void StartNewGame()
+        {
+            InitializeGame();
         }
     }
 }

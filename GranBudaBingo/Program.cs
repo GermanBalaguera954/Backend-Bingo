@@ -14,6 +14,7 @@ var configuration = builder.Configuration;
 
 builder.Services.AddSingleton<IBingoCardGenerator, BingoCardGenerator>();
 builder.Services.AddSingleton<IBingoBallService, BingoBallService>();
+builder.Services.AddSingleton<IBingoCheckService, BingoCheckService>();
 
 
 builder.Services.AddSignalR();
@@ -44,7 +45,7 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowCredentials());
 });
-
+;
 
 builder.Services.AddControllers();
 

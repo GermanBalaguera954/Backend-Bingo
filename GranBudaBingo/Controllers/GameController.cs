@@ -13,12 +13,16 @@ namespace GranBudaBingo.Controllers
         private readonly IBingoCardGenerator bingoCardGenerator;
         private readonly IBingoBallService bingoBallService;
         private readonly IHubContext<BingoHub> bingoHub;
+        private readonly IBingoCheckService bingoCheckService;
 
-        public GameController(IBingoCardGenerator bingoCardGenerator, IBingoBallService bingoBallService, IHubContext<BingoHub> bingoHub)
+        public GameController(IBingoCardGenerator bingoCardGenerator,
+            IBingoBallService bingoBallService, IHubContext<BingoHub> bingoHub,
+            IBingoCheckService bingoCheckService)
         {
             this.bingoCardGenerator = bingoCardGenerator;
             this.bingoBallService = bingoBallService;
             this.bingoHub = bingoHub;
+            this.bingoCheckService = bingoCheckService;
         }
 
         [HttpGet("generate")]
@@ -28,22 +32,36 @@ namespace GranBudaBingo.Controllers
             return Ok(bingoCard);
         }
 
-        [HttpGet("nextball")]
-        public async Task<ActionResult<BingoBall>> GetNextBingoBallAsync()
+        [HttpGet("draw")]
+        public IActionResult DrawBall()
         {
-            var ball = await bingoBallService.GetNextBallAsync(); // Asumiendo que GetNextBall ahora es GetNextBallAsync
-            if (ball != null)
+            try
             {
+                var ball = bingoBallService.DrawBall();
                 return Ok(ball);
             }
-            else
+            catch (InvalidOperationException e)
             {
-                return NoContent();
+                return Ok(e.Message);
             }
         }
-     
-        [HttpPost("declarewinner")]
-        public async Task<ActionResult> DeclareWinner()
+
+        [HttpPost("start")]
+        public IActionResult StartGame()
+        {
+            bingoBallService.StartNewGame();
+            return Ok("Nuevo juego iniciado");
+        }
+
+        [HttpPost("checkBingo")]
+        public ActionResult<bool> CheckBingo([FromBody] BingoCheckRequest request)
+        {
+            var isBingo = bingoCheckService.IsBingo(request.MarkedCellNumbers, request.GameType, request.DrawnNumbers);
+            return Ok(isBingo);
+        }
+
+        [HttpPost("winner")]
+        public async Task<ActionResult> Winner()
         {
             await bingoHub.Clients.All.SendAsync("GameWon");
             return Ok();
