@@ -2,38 +2,46 @@
 {
     public interface IBingoCardGenerator
     {
-        int?[][] GenerateBingoCardMatrix();
+        Task<int?[][]> GenerateBingoCardMatrixAsync();
     }
 
     public class BingoCardGenerator : IBingoCardGenerator
     {
-        public int?[][] GenerateBingoCardMatrix()
+        private readonly Random rand;
+
+        public BingoCardGenerator()
         {
-            int?[][] card = new int?[5][];
-            Random rand = new Random();
+            rand = new Random();
+        }
 
-            for (int i = 0; i < 5; i++)
+        public async Task<int?[][]> GenerateBingoCardMatrixAsync()
+        {
+            return await Task.Run(() =>
             {
-                card[i] = new int?[5];
-                HashSet<int> numbers = new HashSet<int>();
-
-                while (numbers.Count < 5)
+                int?[][] card = new int?[5][];
+                for (int i = 0; i < 5; i++)
                 {
-                    if (i == 2 && numbers.Count == 2)
-                    {
-                        card[i][numbers.Count] = null;
-                        numbers.Add(-1);
-                        continue;
-                    }
+                    card[i] = new int?[5];
+                    HashSet<int> numbers = new HashSet<int>();
 
-                    int num = rand.Next(1 + i * 15, 16 + i * 15);
-                    if (numbers.Add(num))
+                    while (numbers.Count < 5)
                     {
-                        card[i][numbers.Count - 1] = num;
+                        if (i == 2 && numbers.Count == 2)
+                        {
+                            card[i][numbers.Count] = null;
+                            numbers.Add(-1);
+                            continue;
+                        }
+
+                        int num = rand.Next(1 + i * 15, 16 + i * 15);
+                        if (numbers.Add(num))
+                        {
+                            card[i][numbers.Count - 1] = num;
+                        }
                     }
                 }
-            }
-            return card;
+                return card;
+            });
         }
     }
 }

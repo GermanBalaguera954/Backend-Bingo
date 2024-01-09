@@ -25,33 +25,39 @@ namespace GranBudaBingo.Controllers
             this.bingoCheckService = bingoCheckService;
         }
 
-        [HttpGet("generate")]
-        public async Task<ActionResult<BingoCard>> BingoCardGenerateAsync()
+        [HttpGet("generate/{gameId}")]
+        public async Task<ActionResult<BingoCard>> BingoCardGenerateAsync(int gameId)
         {
-            var bingoCard = await Task.Run(() => new BingoCard(bingoCardGenerator));
+            var cardNumbers = await bingoCardGenerator.GenerateBingoCardMatrixAsync();
+            var bingoCard = new BingoCard
+            {
+                BingoGameId = gameId
+            };
+            bingoCard.SetCardNumbers(cardNumbers);
+
             return Ok(bingoCard);
         }
 
-        [HttpGet("draw")]
-        public IActionResult DrawBall()
+        [HttpGet("draw/{gameId}")]
+        public async Task<ActionResult<BingoBall>> DrawBallAsync(int gameId)
         {
             try
             {
-                var ball = bingoBallService.DrawBall();
+                var ball = await bingoBallService.DrawBallAsync(gameId);
                 return Ok(ball);
             }
             catch (InvalidOperationException e)
             {
-                return Ok(e.Message);
+                return BadRequest(e.Message);
             }
         }
 
-        [HttpPost("start")]
-        public IActionResult StartGame()
-        {
-            bingoBallService.StartNewGame();
-            return Ok("Nuevo juego iniciado");
-        }
+        [HttpPost("start/{gameId}")]
+public async Task<IActionResult> StartGame(int gameId)
+{
+    await bingoBallService.StartNewGameAsync(gameId);
+    return Ok("Nuevo juego iniciado");
+}
 
         [HttpPost("checkBingo")]
         public ActionResult<bool> CheckBingo([FromBody] BingoCheckRequest request)
