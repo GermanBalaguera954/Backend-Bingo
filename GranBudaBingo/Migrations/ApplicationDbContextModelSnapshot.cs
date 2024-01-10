@@ -22,7 +22,63 @@ namespace GranBudaBingo.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("BingoCard", b =>
+            modelBuilder.Entity("GranBudaBingo.Models.Ball", b =>
+                {
+                    b.Property<int>("BallId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BallId"));
+
+                    b.Property<string>("Letter")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("int");
+
+                    b.HasKey("BallId");
+
+                    b.ToTable("Balls");
+                });
+
+            modelBuilder.Entity("GranBudaBingo.Models.BallGameSession", b =>
+                {
+                    b.Property<int>("BallId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GameSessionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ExtractionTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("BallId", "GameSessionId");
+
+                    b.HasIndex("GameSessionId");
+
+                    b.ToTable("BallGameSessions");
+                });
+
+            modelBuilder.Entity("GranBudaBingo.Models.BallSelection", b =>
+                {
+                    b.Property<int>("BingoCardId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BallId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SelectionTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("BingoCardId", "BallId");
+
+                    b.HasIndex("BallId");
+
+                    b.ToTable("BallSelections");
+                });
+
+            modelBuilder.Entity("GranBudaBingo.Models.BingoCard", b =>
                 {
                     b.Property<int>("BingoCardId")
                         .ValueGeneratedOnAdd()
@@ -30,51 +86,44 @@ namespace GranBudaBingo.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BingoCardId"));
 
-                    b.Property<int>("BingoGameId")
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("GameSessionId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("BingoCardId");
 
-                    b.HasIndex("BingoGameId");
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("GameSessionId");
 
                     b.ToTable("BingoCards");
                 });
 
-            modelBuilder.Entity("GranBudaBingo.Models.BingoBall", b =>
+            modelBuilder.Entity("GranBudaBingo.Models.GameSession", b =>
                 {
-                    b.Property<int>("BingoBallId")
+                    b.Property<int>("GameSessionId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BingoBallId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GameSessionId"));
 
-                    b.Property<int>("BingoGameId")
-                        .HasColumnType("int");
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("Column")
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Number")
-                        .HasColumnType("int");
+                    b.HasKey("GameSessionId");
 
-                    b.HasKey("BingoBallId");
-
-                    b.HasIndex("BingoGameId");
-
-                    b.ToTable("BingoBalls");
-                });
-
-            modelBuilder.Entity("GranBudaBingo.Models.BingoGame", b =>
-                {
-                    b.Property<int>("BingoGameId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BingoGameId"));
-
-                    b.HasKey("BingoGameId");
-
-                    b.ToTable("BingoGames");
+                    b.ToTable("GameSessions");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -141,6 +190,10 @@ namespace GranBudaBingo.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -192,6 +245,10 @@ namespace GranBudaBingo.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityUser");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -275,26 +332,69 @@ namespace GranBudaBingo.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("BingoCard", b =>
+            modelBuilder.Entity("GranBudaBingo.Models.ApplicationUser", b =>
                 {
-                    b.HasOne("GranBudaBingo.Models.BingoGame", "BingoGame")
-                        .WithMany("BingoCards")
-                        .HasForeignKey("BingoGameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
-                    b.Navigation("BingoGame");
+                    b.Property<DateTime>("RegistrationDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasDiscriminator().HasValue("ApplicationUser");
                 });
 
-            modelBuilder.Entity("GranBudaBingo.Models.BingoBall", b =>
+            modelBuilder.Entity("GranBudaBingo.Models.BallGameSession", b =>
                 {
-                    b.HasOne("GranBudaBingo.Models.BingoGame", "BingoGame")
-                        .WithMany("DrawnBalls")
-                        .HasForeignKey("BingoGameId")
+                    b.HasOne("GranBudaBingo.Models.Ball", "Ball")
+                        .WithMany("BallGameSessions")
+                        .HasForeignKey("BallId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("BingoGame");
+                    b.HasOne("GranBudaBingo.Models.GameSession", "GameSession")
+                        .WithMany("BallsInGame")
+                        .HasForeignKey("GameSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ball");
+
+                    b.Navigation("GameSession");
+                });
+
+            modelBuilder.Entity("GranBudaBingo.Models.BallSelection", b =>
+                {
+                    b.HasOne("GranBudaBingo.Models.Ball", "Ball")
+                        .WithMany()
+                        .HasForeignKey("BallId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GranBudaBingo.Models.BingoCard", "BingoCard")
+                        .WithMany("BallSelections")
+                        .HasForeignKey("BingoCardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ball");
+
+                    b.Navigation("BingoCard");
+                });
+
+            modelBuilder.Entity("GranBudaBingo.Models.BingoCard", b =>
+                {
+                    b.HasOne("GranBudaBingo.Models.ApplicationUser", "User")
+                        .WithMany("BingoCards")
+                        .HasForeignKey("ApplicationUserId");
+
+                    b.HasOne("GranBudaBingo.Models.GameSession", "GameSession")
+                        .WithMany("BingoCards")
+                        .HasForeignKey("GameSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameSession");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -348,11 +448,26 @@ namespace GranBudaBingo.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("GranBudaBingo.Models.BingoGame", b =>
+            modelBuilder.Entity("GranBudaBingo.Models.Ball", b =>
+                {
+                    b.Navigation("BallGameSessions");
+                });
+
+            modelBuilder.Entity("GranBudaBingo.Models.BingoCard", b =>
+                {
+                    b.Navigation("BallSelections");
+                });
+
+            modelBuilder.Entity("GranBudaBingo.Models.GameSession", b =>
+                {
+                    b.Navigation("BallsInGame");
+
+                    b.Navigation("BingoCards");
+                });
+
+            modelBuilder.Entity("GranBudaBingo.Models.ApplicationUser", b =>
                 {
                     b.Navigation("BingoCards");
-
-                    b.Navigation("DrawnBalls");
                 });
 #pragma warning restore 612, 618
         }

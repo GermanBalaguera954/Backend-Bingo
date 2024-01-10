@@ -4,87 +4,64 @@ namespace GranBudaBingo.Services
 {
     public interface IBingoBallService
     {
-        Task<BingoBall> DrawBallAsync(int gameId);
-        Task<bool> IsGameFinishedAsync(int gameId);
-        Task StartNewGameAsync(int gameId);
+        BingoBall DrawBall();
+        bool IsGameFinished();
+        void StartNewGame();
     }
 
     public class BingoBallService : IBingoBallService
     {
-        private readonly Random random;
-        private readonly Dictionary<int, List<BingoBall>> ballsByGame; // Bolas disponibles por juego
-        private readonly Dictionary<int, List<BingoBall>> drawnBallsByGame; // Bolas sorteadas por juego
+        private List<BingoBall> balls;
+        private Random random;
+        private List<BingoBall> drawnBalls;
 
         public BingoBallService()
         {
             random = new Random();
-            ballsByGame = new Dictionary<int, List<BingoBall>>();
-            drawnBallsByGame = new Dictionary<int, List<BingoBall>>();
+            balls = new List<BingoBall>();
+            drawnBalls = new List<BingoBall>();
+            InitializeGame();
         }
 
-        private void InitializeGame(int gameId)
+        private void InitializeGame()
         {
-            string[] columns = { "B", "I", "N", "G", "O" };
-            var balls = new List<BingoBall>();
+            balls.Clear();
+            drawnBalls.Clear();
 
+            string[] columns = { "B", "I", "N", "G", "O" };
             for (int i = 0; i < columns.Length; i++)
             {
                 for (int j = 1; j <= 15; j++)
                 {
-                    balls.Add(new BingoBall
-                    {
-                        Number = j + 15 * i,
-                        Column = columns[i],
-                        BingoGameId = gameId
-                    });
+                    balls.Add(new BingoBall(j + 15 * i, columns[i]));
                 }
             }
 
-            ballsByGame[gameId] = balls.OrderBy(x => random.Next()).ToList();
+            balls = balls.OrderBy(x => random.Next()).ToList();
         }
 
-        public async Task<BingoBall> DrawBallAsync(int gameId)
+        public BingoBall DrawBall()
         {
-            var balls = ballsByGame[gameId];
+            if (IsGameFinished())
+            {
+                throw new InvalidOperationException("No hay más balotas para sortear.");
+            }
+
             int index = random.Next(balls.Count);
             BingoBall drawnBall = balls[index];
             balls.RemoveAt(index);
-
-            if (!drawnBallsByGame.ContainsKey(gameId))
-            {
-                drawnBallsByGame[gameId] = new List<BingoBall>();
-            }
-            drawnBallsByGame[gameId].Add(drawnBall);
-
-            return await Task.Run(() =>
-            {
-                if (!ballsByGame.ContainsKey(gameId) || ballsByGame[gameId].Count == 0)
-                {
-                    throw new InvalidOperationException("No hay más balotas para sortear.");
-                }
-
-                var balls = ballsByGame[gameId];
-                int index = random.Next(balls.Count);
-                BingoBall drawnBall = balls[index];
-                balls.RemoveAt(index);
-                return drawnBall;
-            });
+            drawnBalls.Add(drawnBall);
+            return drawnBall;
         }
 
-        public async Task<bool> IsGameFinishedAsync(int gameId)
+        public bool IsGameFinished()
         {
-            return await Task.FromResult(ballsByGame.ContainsKey(gameId) && ballsByGame[gameId].Count == 0);
+            return balls.Count == 0;
         }
 
-        public async Task StartNewGameAsync(int gameId)
+        public void StartNewGame()
         {
-
-            await Task.Run(() =>
-            {
-
-                InitializeGame(gameId);
-            });
-
+            InitializeGame();
         }
     }
 }
